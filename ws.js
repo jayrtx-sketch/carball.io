@@ -28,7 +28,7 @@ class Client {
         this.rateLimitMessages = [];
         this._functions = new Map();
         this._functionsBin = new Map();
-        
+
         ws.clientId = id;
         ws.client = this;
     }
@@ -47,7 +47,7 @@ class Client {
             let packet = [id1, new Array(data.length)];
             for (let i = 0; i < data.length; i++)
                 packet[1][i] = data[i];
-            
+
             const serialized = JSON.stringify(packet);
             const result = this.ws.send(serialized, uWS.OPCODE_TEXT);
             return result === 1;
@@ -99,16 +99,16 @@ class Client {
 class WebSocket extends EventEmitter {
     constructor(server, options = {}) {
         super();
-        
+
         this.config = { ...DEFAULT_CONFIG, ...options };
         this.httpServer = server;
         this.clients = new Map();
         this.connectedIPs = new Map();
         this.isShuttingDown = false;
         this._connectionHandlers = [];
-        
+
         this.port = server.address()?.port || 3000;
-        
+        console.log("trying to start uWS server at " + this.port)
         // Create standalone uWS app
         this.uwsApp = uWS.App({}).ws('/*', {
             message: (ws, message, opCode) => this.handleMessage(ws, message, opCode),
@@ -127,14 +127,13 @@ class WebSocket extends EventEmitter {
 
         this.setupHeartbeat();
         this.setupGracefulShutdown();
-        
-        console.log(`uWebSocket server initialized for ${this.config.maxConnections} connections`);
+
     }
 
     handleOpen(ws) {
         const id = generateId();
         const ip = ws.getRemoteAddressAsText ? Buffer.from(ws.getRemoteAddressAsText()).toString() : 'unknown';
-        
+
         // Check limits
         if (this.clients.size >= this.config.maxConnections) {
             ws.close();
@@ -146,13 +145,13 @@ class WebSocket extends EventEmitter {
             ws.close();
             return;
         }
-        
+
         const client = new Client(ws, this, id, ip);
         this.clients.set(id, client);
         this.connectedIPs.set(ip, ipConnections + 1);
-        
+
         console.log(`Client ${id} connected. Total: ${this.clients.size}`);
-        
+
         this._connectionHandlers.forEach(handler => {
             try {
                 handler(client);
@@ -160,7 +159,7 @@ class WebSocket extends EventEmitter {
                 console.error('Error in connection handler:', error);
             }
         });
-        
+
         super.emit('connection', client);
     }
 
@@ -190,7 +189,7 @@ class WebSocket extends EventEmitter {
 
             const [eventId, eventData] = packet;
             const handler = client._functions.get(eventId);
-            
+
             if (handler) {
                 if (Array.isArray(eventData)) {
                     handler(...eventData);
@@ -209,7 +208,7 @@ class WebSocket extends EventEmitter {
         if (!client) return;
 
         console.log(`Client ${client.id}: Closed (${code})`);
-        
+
         const closeHandler = client._functions.get('close');
         if (closeHandler) {
             try {
@@ -253,32 +252,32 @@ class WebSocket extends EventEmitter {
     setupHeartbeat() {
         this.heartbeatInterval = setInterval(() => {
             if (this.isShuttingDown) return;
-            
+
             const deadClients = [];
-            
+
             this.clients.forEach((client, id) => {
                 if (!client.isAlive) {
                     deadClients.push(id);
                     return;
                 }
-                
+
                 client.isAlive = false;
                 client.lastPing = Date.now();
-                
+
                 try {
                     client.ws.ping();
                 } catch (error) {
                     deadClients.push(id);
                 }
             });
-            
+
             deadClients.forEach(id => {
                 const client = this.clients.get(id);
                 if (client) {
                     this.destroyClient(client);
                 }
             });
-            
+
         }, this.config.pingInterval);
     }
 
@@ -286,21 +285,21 @@ class WebSocket extends EventEmitter {
         const shutdown = () => {
             console.log('Shutting down uWS server...');
             this.isShuttingDown = true;
-            
+
             if (this.heartbeatInterval) {
                 clearInterval(this.heartbeatInterval);
                 this.heartbeatInterval = null;
             }
-            
+
             this.clients.forEach(client => {
                 client.close();
             });
-            
+
             if (this.uwsApp) {
                 uWS.us_listen_socket_close(this.uwsApp);
             }
         };
-        
+
         process.once('SIGTERM', shutdown);
         process.once('SIGINT', shutdown);
         process.once('SIGUSR2', shutdown);
@@ -320,20 +319,20 @@ class WebSocket extends EventEmitter {
 
     broadcast(eventId, ...data) {
         if (this.clients.size === 0) return 0;
-        
+
         let packet = [eventId, new Array(data.length)];
         for (let i = 0; i < data.length; i++)
             packet[1][i] = data[i];
-        
+
         const serialized = JSON.stringify(packet);
         let sent = 0;
-        
+
         this.clients.forEach(client => {
             if (client.send(serialized)) {
                 sent++;
             }
         });
-        
+
         return sent;
     }
 
