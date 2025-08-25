@@ -2,9 +2,9 @@
 
 /* CSS Variables */
 :root {
-    --primary: #4c6ef5;
-    --primary-dark: #364fc7;
-    --secondary: #51cf66;
+    --primary: #51cf66;
+    --primary-dark: #2f9e44;
+    --secondary: #69db7c;
     --danger: #ff6b6b;
     --warning: #ffd43b;
     --dark: #212529;
@@ -29,7 +29,7 @@ body, html {
     height: 100%;
     font-family: 'Poppins', sans-serif;
     overflow: hidden;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #2f9e44 0%, #1a5f2a 100%);
     background-attachment: fixed;
     position: relative;
 }
@@ -41,8 +41,7 @@ body, html {
     left: 0;
     width: 100%;
     height: 100%;
-    background: url('/homebg.png') center/cover;
-    opacity: 0.3;
+    opacity: 0.4;
     z-index: -1;
 }
 
@@ -159,7 +158,8 @@ body.in-game::after {
     flex: 1;
     min-width: 280px;
     max-width: 350px;
-    height: 420px;
+    width: 350px;
+    height: 350px;
     padding: 25px;
     transition: var(--transition);
     text-align: left;
@@ -1034,6 +1034,7 @@ input[type="text"]:focus, select:focus {
     .menuCard {
         min-width: 300px;
         max-width: 350px;
+        width: 350px;
         height: 350px;
         margin-bottom: 15px;
     }
