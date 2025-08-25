@@ -29,8 +29,6 @@ body, html {
     height: 100%;
     font-family: 'Poppins', sans-serif;
     overflow: hidden;
-    background: linear-gradient(135deg, #2f9e44 0%, #1a5f2a 100%);
-    background-attachment: fixed;
     position: relative;
 }
 
