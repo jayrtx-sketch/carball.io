@@ -68,6 +68,8 @@ export default class GoalPostClient {
         this.goalImg = PIXI.Sprite.from('./goal.png');
         this.goalImg.parentLayer = this.app.pixiLayer;
         this.goalImg.zOrder = 10;
+        // Tint left goal blue, right goal red
+        this.goalImg.tint = this.right ? 0xFF6B6B : 0x6B9BFF;
         // place the goal image correctly and scale it
         this.goalImg.x = points.topLeft.x;
         this.goalImg.y = points.topLeft.y;
@@ -127,7 +129,8 @@ export default class GoalPostClient {
             penaltyBox.height = Math.abs(penaltyBox.height);
         }
 
-        this.graphics.lineStyle(10, 0xFFFFFF, 1);
+        const goalColor = this.right ? 0xFF6B6B : 0x6B9BFF;
+        this.graphics.lineStyle(10, goalColor, 1);
         this.graphics.drawRect(penaltyBox.x, penaltyBox.y, penaltyBox.width, penaltyBox.height);
 
         // semi circle
