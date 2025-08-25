@@ -418,7 +418,7 @@ export default function startGame() {
         console.log("server type: " + serverType, "team: " + team, "already started: " + alreadyStarted);
         if (serverType == "lobby" || alreadyStarted) return;
         //start countdown
-        $("countdown").style.visibility = "visible";
+        $("countdown").classList.add("show");
         countdown(3);
     });
 
@@ -430,7 +430,7 @@ export default function startGame() {
         if (number == 0) {
             $("countdown").innerHTML = "Go!";
             setTimeout(() => {
-                $("countdown").style.visibility = "hidden";
+                $("countdown").classList.remove("show");
             }, 1000);
             return;
         };
@@ -516,11 +516,12 @@ export default function startGame() {
 
         if (scorer == null) return; //this means someone got the goal to change the score
         $("goal").innerHTML = `<span style="color:${yourGoal ? 'purple' : team};">${yourGoal ? 'You' : scorer}</span> scored!`;
-        $("goal").style.left = "0%";
+        $("goal").classList.add("show");
+        $("goal").style.left = "50%";
 
         setTimeout(() => {
-            $("goal").style.left = "100%";
-        }, 5000)
+            $("goal").classList.remove("show");
+        }, 3000)
     });
 
     socket.on("time", (remaining) => {
