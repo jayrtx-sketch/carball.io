@@ -160,7 +160,7 @@ if(serverSelect) {
       console.error(e);
     }
   });
-  
+
   // Update selectedServer based on saved preference if serverSelect exists
   window.selectedServer = (window.serverList.find(server => server.name === alreadyChosen) || bestServer)?.url;
 }
@@ -181,13 +181,13 @@ if (currentServerPlayers) currentServerPlayers.textContent = bestServer.playersC
 try {
   const goalsFromStorage = localStorage.getItem("goals") || "0";
   const goals = JSON.parse(goalsFromStorage);
-  
+
   // Update all goals displays
   const goalsElements = document.querySelectorAll("#goals, #totalGoals");
   goalsElements.forEach(el => {
     if (el) el.textContent = goals;
   });
-  
+
   // Initialize other stats (placeholder values for now)
   const totalWinsEl = document.getElementById("totalWins");
   const totalGamesEl = document.getElementById("totalGames");
@@ -207,19 +207,19 @@ function initializeUIHandlers() {
   const settingsButton = document.getElementById("settingsButton");
   const settingsModal = document.getElementById("settingsModal");
   const settingsClose = document.getElementById("settingsClose");
-  
+
   if (settingsButton && settingsModal) {
     settingsButton.addEventListener("click", () => {
       settingsModal.style.display = "block";
     });
   }
-  
+
   if (settingsClose && settingsModal) {
     settingsClose.addEventListener("click", () => {
       settingsModal.style.display = "none";
     });
   }
-  
+
   // Close modals when clicking overlay
   document.querySelectorAll('.modal').forEach(modal => {
     modal.addEventListener('click', (e) => {
@@ -237,19 +237,18 @@ document.getElementById("playButton").addEventListener("click", () => {
   if(!window.selectedServer) return;
     if (state == "game") return;
     state = "game";
-    cleanupBall();
-    
+
     // Hide main menu and show game UI
     const mainMenu = document.getElementById("mainMenu");
     const gameGUI = document.getElementById("gameGUI");
     const playerCount = document.getElementById("playerCount");
     const playerCountTotal = document.getElementById("playerCountTotal");
-    
+
     if (mainMenu) mainMenu.style.display = "none";
     if (gameGUI) gameGUI.classList.add("active");
     if (playerCount) playerCount.style.display = "block";
     if (playerCountTotal) playerCountTotal.style.display = "none";
-    
+
     // Remove dark overlay for game
     document.body.classList.add("in-game");
 
@@ -262,23 +261,23 @@ document.getElementById("playButton").addEventListener("click", () => {
 
 window.exit = function () {
   checkServers();
-  
+
   // Show main menu and hide game UI
   const mainMenu = document.getElementById("mainMenu");
   const gameGUI = document.getElementById("gameGUI");
   const matchInfo = document.getElementById("matchInfo");
   const playerCount = document.getElementById("playerCount");
   const playerCountTotal = document.getElementById("playerCountTotal");
-  
+
   if (mainMenu) mainMenu.style.display = "block";
   if (gameGUI) gameGUI.classList.remove("active");
   if (matchInfo) matchInfo.classList.remove("active");
   if (playerCount) playerCount.style.display = "none";
   if (playerCountTotal) playerCountTotal.style.display = "block";
-  
+
   // Restore dark overlay for menu
   document.body.classList.remove("in-game");
-  
+
   if(!window.isMobile) reshowBall();
   window.refreshInt = setInterval(updatePlayerCnt, 2000);
 
