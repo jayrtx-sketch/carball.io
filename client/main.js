@@ -11,7 +11,6 @@
 import preloadImages from "./preloadImgs";
 import { initSkinShop } from "./skinShop";
 import startGame from "./startGame";
-import { createBackgroundField } from "./components/backgroundField";
 
 let state = "home";
 let stateObject = null;
@@ -26,10 +25,6 @@ window.isMobile = window.matchMedia("(pointer: coarse)").matches;
 window.goalsRendered = false;
 
 preloadImages()
-
-// Initialize dynamic background field
-const backgroundCanvas = createBackgroundField();
-$("background").appendChild(backgroundCanvas);
 
 
 const joystickDiv = document.getElementById('joystickZone')
