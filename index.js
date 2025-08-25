@@ -11,6 +11,9 @@ const WebSocket = require("./ws");
 const socketIo = require('socket.io');
 const Matter = require("matter-js");
 
+// dotenv
+require('dotenv').config();
+
 const app = express();
 const server = http.createServer(app);
 const io = new WebSocket(server, { strictCORS: false });
@@ -57,7 +60,7 @@ const sockets = {};
 let lastMatchMade = Date.now();
 
 io.on("connection", (socket) => {
-    
+
     socket._carballserver = "lobby";
     sockets[socket.id] = socket;
     socket.emit("id", socket.id);
@@ -168,7 +171,7 @@ function matchMaker(lobby) {
         if (count >= 6) break;
 
         let playerInfo = lobby.players[sockets[i].id];
-        if(playerInfo) { 
+        if(playerInfo) {
         lobby.removePlayer(sockets[i]);
         sockets[i]._carballserver = id;
         Games[id].join(sockets[i], playerInfo.name, false, playerInfo.skin);
@@ -246,6 +249,7 @@ app.get('/api/serverInfo', (req, res) => {
   }
 
 const port = process.env.PORT || 3000;
+console.log(process.env)
 server.listen(port, () => {
     console.log('listening on *:'+port)
 });
