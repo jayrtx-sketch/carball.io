@@ -107,7 +107,7 @@ class WebSocket extends EventEmitter {
         this.isShuttingDown = false;
         this._connectionHandlers = [];
 
-        this.port = server.address()?.port || 3000;
+        this.port = process.env.PORT || 3000;
         console.log("trying to start uWS server at " + this.port)
         // Create standalone uWS app
         this.uwsApp = uWS.App({}).ws('/*', {
