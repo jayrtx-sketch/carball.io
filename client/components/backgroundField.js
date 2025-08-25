@@ -14,15 +14,19 @@ export function createBackgroundField() {
 
     const ctx = canvas.getContext('2d');
     
-    // Draw field background
-    ctx.fillStyle = '#2a5a2a'; // Dark green
+    // Draw field background with gradient
+    const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    gradient.addColorStop(0, '#3b8f3b');
+    gradient.addColorStop(0.5, '#2d7d32');
+    gradient.addColorStop(1, '#1b5e20');
+    ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     // Add grass texture with horizontal lines
-    ctx.strokeStyle = '#1a4a1a';
-    ctx.lineWidth = 1;
-    for (let i = 0; i < canvas.height; i += 40) {
-        ctx.globalAlpha = i % 80 === 0 ? 0.5 : 0.2;
+    ctx.globalAlpha = 0.3;
+    for (let i = 0; i < canvas.height; i += 30) {
+        ctx.strokeStyle = i % 60 === 0 ? '#4caf50' : '#66bb6a';
+        ctx.lineWidth = 1;
         ctx.beginPath();
         ctx.moveTo(0, i);
         ctx.lineTo(canvas.width, i);
@@ -38,14 +42,15 @@ export function createBackgroundField() {
     const offsetX = (canvas.width - fieldWidth * scale) / 2;
     const offsetY = (canvas.height - fieldHeight * scale) / 2;
 
-    // Draw field boundaries
-    ctx.globalAlpha = 0.8;
+    // Reset alpha and draw field lines in bright white
+    ctx.globalAlpha = 1.0;
     ctx.strokeStyle = '#ffffff';
-    ctx.lineWidth = 6 * scale;
+    ctx.lineWidth = Math.max(4 * scale, 2);
+    
+    // Draw field boundaries
     ctx.strokeRect(offsetX, offsetY, fieldWidth * scale, fieldHeight * scale);
 
     // Halfway line
-    ctx.lineWidth = 4 * scale;
     ctx.beginPath();
     ctx.moveTo(offsetX + fieldWidth * scale / 2, offsetY);
     ctx.lineTo(offsetX + fieldWidth * scale / 2, offsetY + fieldHeight * scale);
@@ -61,15 +66,17 @@ export function createBackgroundField() {
     );
     ctx.stroke();
 
-    // Goal areas (simplified)
+    // Goal areas (simplified)  
     const goalWidth = fieldWidth * scale * 0.15;
     const goalHeight = fieldHeight * scale * 0.3;
     const goalY = offsetY + (fieldHeight * scale - goalHeight) / 2;
 
-    // Left goal area
+    // Left goal area - blue tint
+    ctx.strokeStyle = '#2196f3';
     ctx.strokeRect(offsetX, goalY, goalWidth, goalHeight);
     
-    // Right goal area  
+    // Right goal area - red tint
+    ctx.strokeStyle = '#f44336';
     ctx.strokeRect(offsetX + fieldWidth * scale - goalWidth, goalY, goalWidth, goalHeight);
 
     return canvas;
