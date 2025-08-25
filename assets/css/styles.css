@@ -154,8 +154,8 @@ body.in-game::after {
 
 /* Menu Cards */
 .serverCard {
-    display: flex;
-    padding: 0; /* Remove padding for full coverage */
+    display: flex !important;
+    padding: 0 !important; /* Remove padding for full coverage */
     cursor: pointer;
     overflow: hidden;
     border-radius: var(--border-radius);
