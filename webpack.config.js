@@ -11,13 +11,13 @@ try {
 }
 let servers = process.env.GAME_SERVERS;
 if(!servers) {
-  servers = {'Carball Main': 'carball.io'}
+  servers = {'Carball Main': 'carsoccer.io'}
 } else {
   try {
     servers = JSON.parse(servers);
   } catch (e) {
     console.error("Error parsing GAME_SERVERS from .env", e);
-    servers = {'Carball Main': 'carball.io'};
+    servers = {'Carball Main': 'carsoccer.io'};
   }
 }
 console.log("SERVERS", servers)

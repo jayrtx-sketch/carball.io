@@ -19,7 +19,7 @@ module.exports = class Player {
             //frictionStatic: 0.5  THIS is friction with other objects
         });
         //Matter.Body.setInertia(this.body, 500000);
-        this.name = "Carball.io Player";
+        this.name = "Player";
         this.speed = 0.2;
         this.team = team;
         this.boostFuel = 0;
