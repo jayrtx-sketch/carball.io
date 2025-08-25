@@ -69,7 +69,7 @@ export default class GoalPostClient {
         this.goalImg.parentLayer = this.app.pixiLayer;
         this.goalImg.zOrder = 10;
         // Tint left goal blue, right goal red
-        this.goalImg.tint = this.right ? 0xFF6B6B : 0x6B9BFF;
+        this.goalImg.tint = this.right ? 0xFF8888 : 0x88B8FF;
         // place the goal image correctly and scale it
         this.goalImg.x = points.topLeft.x;
         this.goalImg.y = points.topLeft.y;
