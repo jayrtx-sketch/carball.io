@@ -10,7 +10,6 @@ import { formatTime } from './components/utils';
 import Pinger from './Pinger';
 import BallArrowObject from './components/BallArrowObject';
 import fit from './helpers/screenScaling';
-import Matter from 'matter-js';
 import config from '../config';
 import { Layer, Stage } from '@pixi/layers';
 import nipplejs from 'nipplejs';
@@ -77,6 +76,8 @@ export default function startGame() {
         // Use server.carsoccer.io uWS server
         wsUrl = `wss://server.carsoccer.io`;
     }
+        wsUrl = `wss://server.carsoccer.io`;
+
     const socket = new SocketWrapper(wsUrl);
 
     const pinger = new Pinger(socket);
@@ -101,7 +102,6 @@ export default function startGame() {
         speed: 0,
         targetZoom: initZoom,
         zoom: initZoom,
-        matterEngine: Matter.Engine.create(),
         lastAngleSent: null,
         lastAngleSendTime: 0,
         lastKeysSent: null,
@@ -109,17 +109,6 @@ export default function startGame() {
 
     console.log("Client", client);
 
-    const width = config.WORLD_WIDTH;
-    const height = config.WORLD_HEIGHT;
-    client.matterEngine.world.gravity.y = 0;
-
-    //add le border with chamfer for smoother bounces
-    // const chamferValue = 10; // Change as needed
-    let borderTop = Matter.Bodies.rectangle(width / 2, -25, width + 100, 50, { isStatic: true, restitution: 6 });
-    let borderBottom = Matter.Bodies.rectangle(width / 2, height + 25, width + 100, 50, { isStatic: true, restitution: 6 });
-    let borderLeft = Matter.Bodies.rectangle(-25, height / 2, 50, height + 100, { isStatic: true, restitution: 6 });
-    let borderRight = Matter.Bodies.rectangle(width + 25, height / 2, 50, height + 100, { isStatic: true, restitution: 6 });
-    Matter.Composite.add(client.matterEngine.world, [borderTop, borderBottom, borderLeft, borderRight]);
 
     createTiles(app);
 
