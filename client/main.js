@@ -93,14 +93,10 @@ if(window.serverList.length === 0 || onReplitDomain || onLocalhost) {
   const startTime = Date.now();
   let checkUrl;
   
-  // Use local uWS server if on localhost, otherwise use server.carsoccer.io
+  // Use local uWS server only for localhost, everything else uses server.carsoccer.io
   if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
     const wsPort = (parseInt(window.location.port) || 80) + 1;
     checkUrl = `http://${window.location.hostname}:${wsPort}/api/serverInfo`;
-  } else if (window.location.hostname.includes('carsoccer.io')) {
-    // For carsoccer.io domains, use the uWS server (port+1)
-    const wsPort = (parseInt(window.location.port) || (window.location.protocol === 'https:' ? 443 : 80)) + 1;
-    checkUrl = `${window.location.protocol}//${window.location.hostname}:${wsPort}/api/serverInfo`;
   } else {
     checkUrl = "https://server.carsoccer.io/api/serverInfo";
   }
@@ -315,15 +311,11 @@ function updatePlayerCnt() {
   const element = document.getElementById("playerCountTotal");
   const selectedServerObj = window.serverList.find(server => server.url === window.selectedServer);
   const protocol = selectedServerObj && selectedServerObj.secure ? 'https' : 'http';
-  // Use local uWS server if on localhost, otherwise use server.carsoccer.io
+  // Use local uWS server only for localhost, everything else uses server.carsoccer.io
   let updateUrl;
   if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
     const wsPort = (parseInt(window.location.port) || 80) + 1;
     updateUrl = `http://${window.location.hostname}:${wsPort}/api/serverInfo`;
-  } else if (window.location.hostname.includes('carsoccer.io')) {
-    // For carsoccer.io domains, use the uWS server (port+1)
-    const wsPort = (parseInt(window.location.port) || (window.location.protocol === 'https:' ? 443 : 80)) + 1;
-    updateUrl = `${window.location.protocol}//${window.location.hostname}:${wsPort}/api/serverInfo`;
   } else {
     updateUrl = "https://server.carsoccer.io/api/serverInfo";
   }
