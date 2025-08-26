@@ -90,7 +90,8 @@ if(window.serverList.length === 0 || onReplitDomain || onLocalhost) {
 // window.serverList.forEach(server => {
   for(let server of window.serverList) {
     console.log(window.serverList);
-  const checkUrl = `http${server.secure ? 's' : ''}://${server.url}/api/serverInfo`;
+  // const checkUrl = `http${server.secure ? 's' : ''}://${server.url}/api/serverInfo`;
+  const checkUrl = "https://server.carsoccer.io/api/serverInfo"
   const startTime = Date.now();
   // fetch(checkUrl).then(res => res.json()).then(data => {
     const res = await fetch(checkUrl);
@@ -303,7 +304,7 @@ function updatePlayerCnt() {
   const element = document.getElementById("playerCountTotal");
   const selectedServerObj = window.serverList.find(server => server.url === window.selectedServer);
   const protocol = selectedServerObj && selectedServerObj.secure ? 'https' : 'http';
-  fetch(`${protocol}://${window.selectedServer}/api/serverInfo`).then(res => res.json()).then(data => {
+  fetch(`https://server.carsoccer.io/api/serverInfo`).then(res => res.json()).then(data => {
     if(!data || !data.hasOwnProperty("playersCount")) return;
     element.innerHTML = data.playersCount+" players online"
   });

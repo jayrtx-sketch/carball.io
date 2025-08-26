@@ -110,20 +110,33 @@ class WebSocket extends EventEmitter {
         this.port = (parseInt(process.env.PORT) || 3000) + 1;
         console.log("trying to start uWS server at " + this.port)
         // Create standalone uWS app
-        this.uwsApp = uWS.App({}).ws('/*', {
-            message: (ws, message, opCode) => this.handleMessage(ws, message, opCode),
-            open: (ws) => this.handleOpen(ws),
-            close: (ws, code, message) => this.handleClose(ws, code, message),
-            pong: (ws) => this.handlePong(ws),
-            maxMessageSize: this.config.maxMessageSize,
-            compression: uWS.SHARED_COMPRESSOR,
-        }).listen(this.port, (token) => {
-            if (token) {
-                console.log(`uWS listening on port ${this.port}`);
-            } else {
-                console.error('Failed to start uWS server');
-            }
-        });
+        this.uwsApp = uWS.App({})
+            .get('/api/serverInfo', (res, req) => {
+                res.writeHeader('Access-Control-Allow-Origin', '*');
+                res.writeHeader('Content-Type', 'application/json');
+                
+                // Get server info callback
+                if (this.serverInfoHandler) {
+                    const info = this.serverInfoHandler();
+                    res.end(JSON.stringify(info));
+                } else {
+                    res.end(JSON.stringify({ error: 'Server info not available' }));
+                }
+            })
+            .ws('/*', {
+                message: (ws, message, opCode) => this.handleMessage(ws, message, opCode),
+                open: (ws) => this.handleOpen(ws),
+                close: (ws, code, message) => this.handleClose(ws, code, message),
+                pong: (ws) => this.handlePong(ws),
+                maxMessageSize: this.config.maxMessageSize,
+                compression: uWS.SHARED_COMPRESSOR,
+            }).listen(this.port, (token) => {
+                if (token) {
+                    console.log(`uWS listening on port ${this.port}`);
+                } else {
+                    console.error('Failed to start uWS server');
+                }
+            });
 
         this.setupHeartbeat();
         this.setupGracefulShutdown();
@@ -348,6 +361,10 @@ class WebSocket extends EventEmitter {
             }
         });
         return sent;
+    }
+
+    setServerInfoHandler(handler) {
+        this.serverInfoHandler = handler;
     }
 }
 

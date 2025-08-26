@@ -8,7 +8,11 @@
       "Bash(git rm:*)",
       "Bash(cp:*)",
       "Bash(rm:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(npm run build:*)",
+      "Bash(taskkill:*)",
+      "Bash(curl:*)",
+      "Bash(npm start)"
     ],
     "deny": []
   }

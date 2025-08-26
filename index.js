@@ -18,6 +18,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new WebSocket(server, { strictCORS: false });
 
+
 // Import classes
 const Game = require('./classes/Game');
 
@@ -49,6 +50,16 @@ const config = require("./config");
 const Games = {
     "lobby": new Game("lobby", "lobby")
 }
+
+// Set server info handler for uWS
+io.setServerInfoHandler(() => {
+    const gamesCount = Object.keys(Games).length;
+    const playersCount = getTotalPlayerCount();
+    return {
+        gamesCount: gamesCount,
+        playersCount: playersCount
+    };
+});
 
 //ez pz no more ball
 // Games.lobby.ball.x = -1000;
