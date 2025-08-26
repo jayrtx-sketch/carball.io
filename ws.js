@@ -117,9 +117,9 @@ class WebSocket extends EventEmitter {
             pong: (ws) => this.handlePong(ws),
             maxMessageSize: this.config.maxMessageSize,
             compression: uWS.SHARED_COMPRESSOR,
-        }).listen(this.port + 1, (token) => {
+        }).listen(this.port, (token) => {
             if (token) {
-                console.log(`uWS listening on port ${this.port + 1}`);
+                console.log(`uWS listening on port ${this.port}`);
             } else {
                 console.error('Failed to start uWS server');
             }
