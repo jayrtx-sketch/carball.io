@@ -67,13 +67,21 @@ export default function startGame() {
 
     const players = {};
 
-    // Determine the correct WebSocket protocol based on server security settings
+    // Smart WebSocket routing: localhost uses local server, carsoccer.io uses domain server
     let wsUrl = null;
-    if (window.selectedServer) {
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        // For localhost, use local uWS server
+        const wsPort = (parseInt(window.location.port) || 80) + 1;
+        wsUrl = `ws://${window.location.hostname}:${wsPort}`;
+    } else if (window.location.hostname.includes('carsoccer.io')) {
+        // For carsoccer.io domains, use the domain's uWS server
+        const wsProtocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+        const wsPort = (parseInt(window.location.port) || (window.location.protocol === 'https:' ? 443 : 80)) + 1;
+        wsUrl = `${wsProtocol}://${window.location.hostname}:${wsPort}`;
+    } else if (window.selectedServer) {
+        // Fallback to selected server logic
         const selectedServerObj = window.serverList?.find(server => server.url === window.selectedServer);
         const wsProtocol = selectedServerObj && selectedServerObj.secure ? 'wss' : 'ws';
-
-        // Extract host and port, then add 1 to port for uWS
         const serverUrl = window.selectedServer;
         const [host, port] = serverUrl.split(':');
         const wsPort = (parseInt(port) || 3000) + 1;
