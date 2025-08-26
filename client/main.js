@@ -90,12 +90,23 @@ if(window.serverList.length === 0 || onReplitDomain || onLocalhost) {
 // window.serverList.forEach(server => {
   for(let server of window.serverList) {
     console.log(window.serverList);
-  // const checkUrl = `http${server.secure ? 's' : ''}://${server.url}/api/serverInfo`;
-  const checkUrl = "https://server.carsoccer.io/api/serverInfo"
   const startTime = Date.now();
-  // fetch(checkUrl).then(res => res.json()).then(data => {
-    const res = await fetch(checkUrl);
-    const data = await res.json();
+  let checkUrl;
+  
+  // Use local uWS server if on localhost, otherwise use server.carsoccer.io
+  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+    const wsPort = (parseInt(window.location.port) || 80) + 1;
+    checkUrl = `http://${window.location.hostname}:${wsPort}/api/serverInfo`;
+  } else if (window.location.hostname.includes('carsoccer.io')) {
+    // For carsoccer.io domains, use the uWS server (port+1)
+    const wsPort = (parseInt(window.location.port) || (window.location.protocol === 'https:' ? 443 : 80)) + 1;
+    checkUrl = `${window.location.protocol}//${window.location.hostname}:${wsPort}/api/serverInfo`;
+  } else {
+    checkUrl = "https://server.carsoccer.io/api/serverInfo";
+  }
+  
+  const res = await fetch(checkUrl);
+  const data = await res.json();
     if(data && data.gamesCount > 0) {
     server.online = true;
     server.ping = Date.now() - startTime;
@@ -304,7 +315,20 @@ function updatePlayerCnt() {
   const element = document.getElementById("playerCountTotal");
   const selectedServerObj = window.serverList.find(server => server.url === window.selectedServer);
   const protocol = selectedServerObj && selectedServerObj.secure ? 'https' : 'http';
-  fetch(`https://server.carsoccer.io/api/serverInfo`).then(res => res.json()).then(data => {
+  // Use local uWS server if on localhost, otherwise use server.carsoccer.io
+  let updateUrl;
+  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+    const wsPort = (parseInt(window.location.port) || 80) + 1;
+    updateUrl = `http://${window.location.hostname}:${wsPort}/api/serverInfo`;
+  } else if (window.location.hostname.includes('carsoccer.io')) {
+    // For carsoccer.io domains, use the uWS server (port+1)
+    const wsPort = (parseInt(window.location.port) || (window.location.protocol === 'https:' ? 443 : 80)) + 1;
+    updateUrl = `${window.location.protocol}//${window.location.hostname}:${wsPort}/api/serverInfo`;
+  } else {
+    updateUrl = "https://server.carsoccer.io/api/serverInfo";
+  }
+  
+  fetch(updateUrl).then(res => res.json()).then(data => {
     if(!data || !data.hasOwnProperty("playersCount")) return;
     element.innerHTML = data.playersCount+" players online"
   });
