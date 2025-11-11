@@ -1,7 +1,16 @@
 module.exports = {
-  MIN_MATCH_WAITTIME: 6000, //THIS IS IN SECONDS 
-  MATCH_LENGTH: 1, //IN MINUTES
-  MAX_MATCHES: 10,
-  BOOST_STRENGTH: 1.5, //multiplier to max velocity
-  DEFAULT_NAME: "Car"
+  MIN_MATCH_WAITTIME: 60, //THIS IS IN SECONDS 
+  MATCH_LENGTH: 5, //IN MINUTES
+  MAX_MATCHES: 20,
+  BOOST_STRENGTH: 1.8, //multiplier to max velocity
+  BOOST_RECHARGE_RATE: 1.5, //per tick
+  BOOST_CONSUMPTION_RATE: 4, //per tick when boosting
+  MAX_BOOST: 240,
+  DEFAULT_NAME: "Car",
+  PHYSICS_FPS: 60,
+  UPDATE_RATE: 30, //client updates per second
+  MAX_BALL_SPEED: 35,
+  MAX_PLAYER_SPEED: 25,
+  MIN_PLAYERS_FOR_MATCH: 4,
+  MAX_PLAYERS_PER_MATCH: 10
 }

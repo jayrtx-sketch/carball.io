@@ -1,15 +1,16 @@
 {
-  "name": "carball.io",
+  "name": "carsoccer.io",
   "version": "1.0.0",
-  "description": "",
+  "description": "High-performance multiplayer car soccer game",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "npx webpack --config webpack.config.js",
     "watch": "npx webpack --config webpack.config.js --watch --mode development --devtool inline-source-map",
-    "start": "node ."
+    "start": "node index-uws.js",
+    "start:legacy": "node index.js"
   },
-  "keywords": [],
+  "keywords": ["game", "multiplayer", "soccer", "car"],
   "author": "",
   "license": "ISC",
   "dependencies": {
@@ -17,11 +18,9 @@
     "html-webpack-plugin": "^5.5.3",
     "matter-js": "^0.19.0",
     "pixi.js": "^7.3.1",
-    "socket.io": "^4.7.2",
-    "socket.io-client": "^4.7.2",
+    "uWebSockets.js": "github:uNetworking/uWebSockets.js#v20.44.0",
     "uuid": "^9.0.1",
     "webpack": "^5.88.2",
-    "webpack-cli": "^5.1.4",
-    "ws": "^8.16.0"
+    "webpack-cli": "^5.1.4"
   }
 }

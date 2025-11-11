@@ -17,6 +17,7 @@ export default class PlayerObject {
         this.targetAngle = 0;
         this.boost = 0;
         this.speed = 0;
+        this.lastBoostParticle = 0;
         
         this.trailGraphics = new PIXI.Graphics();   // Create a new graphics object for the trail
         this.app.stage.addChild(this.trailGraphics); // Add the trail graphics to the stage

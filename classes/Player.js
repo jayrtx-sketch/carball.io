@@ -10,20 +10,28 @@ module.exports = class Player {
     constructor(id, team) {
         this.id = id;
         this.movement = { "up": false, "down": false, "left": false, "right": false, angle: undefined };
+        
+        // Optimized physics properties for satisfying car feel
         this.body = Matter.Bodies.rectangle(100, 100, 160, 90, {
             mass: 5,
-            restitution: 1.0,
-            //friction: 0.1,  THIS is friction with other objects
-            frictionAir: 0.07,
-            //frictionStatic: 0.5  THIS is friction with other objects
+            restitution: 0.95, // Slightly less bouncy for more control
+            friction: 0.08,  // Friction with other objects for better collisions
+            frictionAir: 0.06, // Reduced air friction for faster gameplay
+            frictionStatic: 0.3, // Better starting friction
+            density: 0.001,
+            slop: 0.05 // Collision precision
         });
-        //Matter.Body.setInertia(this.body, 500000);
+        
+        // Higher inertia for more realistic car rotation
+        Matter.Body.setInertia(this.body, this.body.inertia * 1.3);
+        
         this.name = "VROOM";
-        this.speed = 0.25;
+        this.speed = 0.28; // Increased for faster gameplay
         this.team = team;
 
-        this.boostFuel = 240;
+        this.boostFuel = config.MAX_BOOST;
         this.boosting = false;
+        this.lastBoostTime = 0;
     }
     boost() {
         this.boosting = true;
@@ -56,7 +64,7 @@ module.exports = class Player {
     }
     updatePosition() {
         let body = this.body;
-        const torque = 450;
+        const torque = 500; // Increased for snappier turning
 
         if(typeof this.movement.angle == "number")
             this.updateRotation(torque);
@@ -67,10 +75,10 @@ module.exports = class Player {
                 this.boosting = false;
 
             speed *= config.BOOST_STRENGTH;
-            this.boostFuel -= 4;
+            this.boostFuel -= config.BOOST_CONSUMPTION_RATE;
         } else {
-            if (this.boostFuel < 240)
-                this.boostFuel += 1;
+            if (this.boostFuel < config.MAX_BOOST)
+                this.boostFuel += config.BOOST_RECHARGE_RATE;
         }
 
         if (this.movement.up) {
@@ -99,8 +107,17 @@ module.exports = class Player {
             }
         }
 
-        let angularVelocity = Matter.Body.getAngularVelocity(this.body) * 0.85;
+        // Smoother angular velocity damping
+        let angularVelocity = Matter.Body.getAngularVelocity(this.body) * 0.88;
         Matter.Body.setAngularVelocity(this.body, angularVelocity);
+        
+        // Apply max speed limit for better control
+        let currentSpeed = Matter.Body.getSpeed(this.body);
+        let maxSpeed = config.MAX_PLAYER_SPEED * (this.boosting ? config.BOOST_STRENGTH : 1);
+        
+        if (currentSpeed > maxSpeed) {
+            Matter.Body.setSpeed(this.body, maxSpeed);
+        }
     }
 
     exportJSON() {

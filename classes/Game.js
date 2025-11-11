@@ -75,7 +75,7 @@ module.exports = class Game {
     }
 
     open() {
-        return (Object.keys(this.sockets).length >= 6);
+        return (Object.keys(this.sockets).length >= config.MAX_PLAYERS_PER_MATCH);
     }
 
     get count() {
@@ -85,6 +85,8 @@ module.exports = class Game {
     startGame() {
         if (this.started) return;
         this.started = true;
+        
+        // 3 second countdown before movement unlock
         setTimeout(() => {
             this.movementLock = false;
         }, 3000);
@@ -221,18 +223,23 @@ module.exports = class Game {
             }
         }
 
-        //UPDATE EVERY OTHER TICK TO SAVE SOME DATA IDK WHY U REMOVED THIS ORIGINALLY WE DONT NEED 60 TPS for PACKETS
-        this.sentUpdate = !this.sentUpdate;
-        if (this.sentUpdate) return;
+        // Reduce update rate to match config (30 FPS instead of 60 for network)
+        if (!this.updateCounter) this.updateCounter = 0;
+        this.updateCounter++;
+        
+        const updateInterval = Math.floor(config.PHYSICS_FPS / config.UPDATE_RATE);
+        if (this.updateCounter % updateInterval !== 0) return;
 
-        // Prepare the data packet
+        // Prepare optimized data packet
         let pack = {
             updatedPlayers: {},
             ball: this.ball.exportJSON(),
         };
+        
         for (let i in this.players) {
             pack.updatedPlayers[i] = this.players[i].exportJSON();
         }
+        
         this.emit('update', pack);
     }
 }

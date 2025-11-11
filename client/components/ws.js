@@ -96,5 +96,11 @@ export default class SocketWrapper {
     if (this.ws.bufferedAmount < 1001)
       this.send(JSON.stringify(packet));
   }
+  
+  close() {
+    if (this.ws && this.ws.readyState === 1) {
+      this.ws.close(1000, 'Client closing connection');
+    }
+  }
 }
 

@@ -1,22 +1,32 @@
 
 import SocketWrapper from './components/ws';
-import io from 'socket.io-client';
 import * as PIXI from 'pixi.js';
 import SoccerBallObject from './components/SoccerBallObject';
 import PlayerObject from './components/PlayerObject';
 import createTiles from './components/Tiles';
 import GoalPostClient from './components/GoalPostObject';
+import ParticleSystem from './components/ParticleSystem';
 import { formatTime } from './components/utils';
 
 export default function startGame() {
 
+    // Optimized PIXI settings for performance
     const app = new PIXI.Application({
         width: window.innerWidth,
         height: window.innerHeight,
-        backgroundColor: 0xAAAAAA
+        backgroundColor: 0x1a1a1a,
+        antialias: true,
+        resolution: window.devicePixelRatio || 1,
+        autoDensity: true,
+        powerPreference: 'high-performance'
     });
+    
+    // Set render options for better performance
+    app.renderer.resize(window.innerWidth, window.innerHeight);
+    app.stage.sortableChildren = true;
+    
     document.body.appendChild(app.view);
-    document.body.style.margin = "0"; // remove default margins
+    document.body.style.margin = "0";
     app.renderer.view.style.position = "absolute";
     app.renderer.view.style.display = "block";
 
@@ -24,6 +34,9 @@ export default function startGame() {
 
 
     const players = {};
+    
+    // Initialize particle system for visual effects
+    const particleSystem = new ParticleSystem(app, 1000);
 
     const socket = new SocketWrapper();
 
@@ -43,7 +56,9 @@ export default function startGame() {
         boost: 0,
         chat: "",
         chatOpen: false,
-        you: null
+        you: null,
+        particleSystem: particleSystem,
+        lastBoostParticles: 0
     }
 
     createTiles(app);
@@ -314,6 +329,10 @@ export default function startGame() {
         //make it so dont pan at start
         if (score.red == 0 && score.blue == 0) return;
         
+        // Emit goal celebration particles
+        const teamColor = team === 'blue' ? 0x4444FF : 0xFF4444;
+        particleSystem.emitGoal(soccerBall.sprite.x, soccerBall.sprite.y, teamColor);
+        
         client.viewTarget = "ball";
         client.lastViewChange = Date.now();
         setTimeout(() => {
@@ -321,14 +340,17 @@ export default function startGame() {
             client.lastViewChange = Date.now();
         }, 1900);
 
-        if (scorer == null) return; //this means someone got the goal to change the score
+        if (scorer == null) return;
         console.log(scorer + team);
         $("goal").innerHTML = scorer + " scored!";
         $("goal").style.left = "0%";
+        $("goal").style.color = team === 'blue' ? 'blue' : 'crimson';
+        $("goal").style.fontSize = "4em";
+        $("goal").style.textShadow = `0 0 20px ${team === 'blue' ? '#4444FF' : '#FF4444'}`;
 
         setTimeout(() => {
             $("goal").style.left = "100%";
-        }, 3000)
+        }, 3000);
     });
 
     socket.on("time", (remaining) => {
@@ -380,16 +402,32 @@ export default function startGame() {
         soccerBall.updatePosition(ballData.x, ballData.y, ballData.angle, client);
     }
 
-    let ticker = app.ticker.add(() => {
+    let ticker = app.ticker.add((delta) => {
         // Interpolate player positions
+        const now = Date.now();
         for (let id in players) {
             players[id].interpolatePosition(client);
+            
+            // Emit boost particles for boosting players (throttled per player)
+            if (players[id].boost > 0 && players[id].boost < 240) {
+                if (now - players[id].lastBoostParticle > 50) {
+                    const color = players[id].team === 'blue' ? 0x4444FF : 0xFF4444;
+                    particleSystem.emitBoost(
+                        players[id].sprite.x,
+                        players[id].sprite.y,
+                        players[id].angle,
+                        color
+                    );
+                    players[id].lastBoostParticle = now;
+                }
+            }
         }
 
-        // Check active keys and send movement
-        //emitPlayerMovement();
+        // Update particle system
+        particleSystem.update(delta);
+        
+        // Interpolate ball
         soccerBall.interpolatePosition(client);
-       
     });
 
     //update timers and stuff not every render tick to make it super fast
@@ -411,6 +449,8 @@ export default function startGame() {
     //clean up the game cuz u made it set everything when u start a function
     function cleanup() {
         clearInterval(guiTick);
+        particleSystem.destroy();
+        socket.close();
     }
 
     window.addEventListener('resize', function () {
