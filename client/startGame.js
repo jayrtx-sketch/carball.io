@@ -307,9 +307,34 @@ export default function startGame() {
     });
     
     socket.on("score", (score, scorer, team) => {
+        const oldBlue = client.score.blue;
+        const oldRed = client.score.red;
         client.score = score;
-        document.getElementById("blue").innerHTML = client.score.blue;
-        document.getElementById("red").innerHTML = client.score.red;
+        
+        const blueElement = document.getElementById("blue");
+        const redElement = document.getElementById("red");
+        const scoreElement = document.getElementById("score");
+        
+        // Animate score update
+        if (score.blue !== oldBlue) {
+            blueElement.innerHTML = score.blue;
+            blueElement.classList.add("score-highlight");
+            scoreElement.classList.add("score-update");
+            setTimeout(() => {
+                blueElement.classList.remove("score-highlight");
+                scoreElement.classList.remove("score-update");
+            }, 800);
+        }
+        
+        if (score.red !== oldRed) {
+            redElement.innerHTML = score.red;
+            redElement.classList.add("score-highlight");
+            scoreElement.classList.add("score-update");
+            setTimeout(() => {
+                redElement.classList.remove("score-highlight");
+                scoreElement.classList.remove("score-update");
+            }, 800);
+        }
 
         //make it so dont pan at start
         if (score.red == 0 && score.blue == 0) return;

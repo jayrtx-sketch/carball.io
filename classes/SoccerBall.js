@@ -4,11 +4,10 @@ module.exports = class SoccerBall {
     constructor(x, y) {
         this.body = Matter.Bodies.circle(x, y, 50, {
             mass: 6,
-            restitution: 1.0,
-            // friction: 0.5,
-            frictionAir: 0.015,
-            inertia: Infinity
-            // frictionStatic: 0.5
+            restitution: 0.8, // Slightly reduced for more controlled bounces
+            friction: 0.1, // Friction with ground
+            frictionAir: 0.01, // Very low air friction for smooth rolling
+            inertia: Infinity // Prevent rotation for more predictable physics
         });
 
         this.scored = false;
@@ -42,14 +41,14 @@ module.exports = class SoccerBall {
     }
 
     updatePosition() {
-        // Rely on the inherent friction and damping properties for the ball.
-        // No need for manual friction calculations here.
-
-        //max speed
-        let maxspeed = 30;
+        // Cap max speed for better gameplay
+        let maxspeed = 35; // Increased max speed slightly
         if (Matter.Body.getSpeed(this.body) > maxspeed) {
             Matter.Body.setSpeed(this.body, maxspeed)
         }
+        
+        // Prevent ball from rotating (keep it rolling smoothly)
+        Matter.Body.setAngularVelocity(this.body, 0);
     }
 
     exportJSON() {

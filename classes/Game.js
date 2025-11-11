@@ -13,7 +13,7 @@ module.exports = class Game {
         this.type = type;
         this.gameWorld = new GameWorld();
         this.players = {};
-        this.ball = new SoccerBall(400, 300);
+        this.ball = new SoccerBall(this.gameWorld.width / 2, this.gameWorld.height / 2);
         this.leftGoal = new GoalPost(100, this.gameWorld.height / 2, 500, 300); // Create left goal post
         this.rightGoal = new GoalPost(this.gameWorld.width - 100, this.gameWorld.height / 2, 500, 300, true); // Create right goal post
 
@@ -57,11 +57,21 @@ module.exports = class Game {
         return this.gameEnds - Date.now();
     }
     newMatch() {
-        this.ball.x = this.gameWorld.width / 2;
-        this.ball.y = this.gameWorld.height / 2;
+        // Reset ball to center
+        Matter.Body.setPosition(this.ball.body, { 
+            x: this.gameWorld.width / 2, 
+            y: this.gameWorld.height / 2 
+        });
+        Matter.Body.setVelocity(this.ball.body, { x: 0, y: 0 });
+        Matter.Body.setAngularVelocity(this.ball.body, 0);
         this.ball.scored = false;
+        
+        // Reset players to their team sides
         for (let i in this.players) {
             this.movePlayerToTeamSide(this.players[i]);
+            // Reset player velocity
+            Matter.Body.setVelocity(this.players[i].body, { x: 0, y: 0 });
+            Matter.Body.setAngularVelocity(this.players[i].body, 0);
         }
     }
 
@@ -152,8 +162,13 @@ module.exports = class Game {
         for (let i = 0; i < l; i++)
             packet[1][i] = data[i];
         packet = JSON.stringify(packet);
-        for (let i in this.sockets)
-            this.sockets[i].ws.send(packet);
+        for (let i in this.sockets) {
+            try {
+                this.sockets[i].emit(id, ...data);
+            } catch (e) {
+                console.error("Error emitting to socket:", e);
+            }
+        }
     }
     removePlayer(socket) {
         if (!(socket.id in this.sockets)) return;
@@ -174,12 +189,16 @@ module.exports = class Game {
         }
     }
 
-    update(lastUpdate) {
+    update(delta) {
+        const now = Date.now();
 
-        if (Date.now() > this.gameEnds && this.type !== "lobby") {
+        if (now > this.gameEnds && this.type !== "lobby") {
             this.closeGame();
             return;
         }
+
+        // Update physics engine with fixed timestep for consistency
+        Matter.Engine.update(this.gameWorld.engine, delta);
 
         this.ball.updatePosition();
         for (let id in this.players) {
@@ -204,35 +223,41 @@ module.exports = class Game {
             }
 
             if (this.ball.scored) {
-                this.emit("score", this.score, this.lastBallCollision[team].name, team);
+                const scorerName = this.lastBallCollision[team] ? this.lastBallCollision[team].name : null;
+                this.emit("score", this.score, scorerName, team);
                 setTimeout(() => {
                     this.newMatch();
                 }, 5000);
             }
         }
 
-        // Update the physics engine
-        Matter.Engine.update(this.gameWorld.engine, Date.now() - lastUpdate);
-
-        //find out who touched le ball last
-        for (let i in this.players) {
-            if (Matter.Collision.collides(this.players[i].body, this.ball.body)) {
-                this.lastBallCollision[this.players[i].team] = this.players[i];
+        // Optimized collision detection - only check if ball is moving fast enough
+        const ballSpeed = Matter.Body.getSpeed(this.ball.body);
+        if (ballSpeed > 0.1) {
+            for (let i in this.players) {
+                if (Matter.Collision.collides(this.players[i].body, this.ball.body)) {
+                    this.lastBallCollision[this.players[i].team] = this.players[i];
+                }
             }
         }
 
-        //UPDATE EVERY OTHER TICK TO SAVE SOME DATA IDK WHY U REMOVED THIS ORIGINALLY WE DONT NEED 60 TPS for PACKETS
-        this.sentUpdate = !this.sentUpdate;
-        if (this.sentUpdate) return;
+        // Update counter for rate limiting
+        this.updateCounter = (this.updateCounter || 0) + 1;
+        const updateRate = Math.floor(config.TICK_RATE / config.UPDATE_RATE);
+        
+        // Only send updates at configured rate (e.g., every other tick)
+        if (this.updateCounter % updateRate !== 0) return;
 
-        // Prepare the data packet
+        // Prepare the data packet - optimize by only sending changed data
         let pack = {
             updatedPlayers: {},
             ball: this.ball.exportJSON(),
         };
+        
         for (let i in this.players) {
             pack.updatedPlayers[i] = this.players[i].exportJSON();
         }
+        
         this.emit('update', pack);
     }
 }

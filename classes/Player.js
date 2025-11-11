@@ -12,14 +12,15 @@ module.exports = class Player {
         this.movement = { "up": false, "down": false, "left": false, "right": false, angle: undefined };
         this.body = Matter.Bodies.rectangle(100, 100, 160, 90, {
             mass: 5,
-            restitution: 1.0,
-            //friction: 0.1,  THIS is friction with other objects
-            frictionAir: 0.07,
-            //frictionStatic: 0.5  THIS is friction with other objects
+            restitution: 0.3, // Reduced for more controlled bounces
+            friction: 0.1, // Friction with other objects
+            frictionAir: 0.05, // Reduced air friction for better responsiveness
+            frictionStatic: 0.3 // Static friction
         });
-        //Matter.Body.setInertia(this.body, 500000);
+        // Increase inertia for more realistic car physics
+        Matter.Body.setInertia(this.body, 100000);
         this.name = "VROOM";
-        this.speed = 0.25;
+        this.speed = 0.3; // Slightly increased base speed
         this.team = team;
 
         this.boostFuel = 240;
@@ -56,7 +57,7 @@ module.exports = class Player {
     }
     updatePosition() {
         let body = this.body;
-        const torque = 450;
+        const torque = 500; // Increased torque for snappier turning
 
         if(typeof this.movement.angle == "number")
             this.updateRotation(torque);
@@ -70,13 +71,13 @@ module.exports = class Player {
             this.boostFuel -= 4;
         } else {
             if (this.boostFuel < 240)
-                this.boostFuel += 1;
+                this.boostFuel += 1.5; // Slightly faster boost recharge
         }
 
         if (this.movement.up) {
             let vector = {
-                x: speed / 10 * Math.cos(body.angle),
-                y: speed / 10 * Math.sin(body.angle)
+                x: speed * Math.cos(body.angle),
+                y: speed * Math.sin(body.angle)
             };
             Matter.Body.applyForce(body, body.position, vector);
         }
@@ -84,8 +85,8 @@ module.exports = class Player {
         if (!this.movement.angle) {
             if (this.movement.down) {
                 let vector = {
-                    x: -this.speed / 10 * Math.cos(body.angle),
-                    y: -this.speed / 10 * Math.sin(body.angle)
+                    x: -this.speed * 0.6 * Math.cos(body.angle), // Reverse is slower
+                    y: -this.speed * 0.6 * Math.sin(body.angle)
                 };
                 Matter.Body.applyForce(body, body.position, vector);
             }
@@ -99,8 +100,21 @@ module.exports = class Player {
             }
         }
 
-        let angularVelocity = Matter.Body.getAngularVelocity(this.body) * 0.85;
+        // Improved angular damping for smoother rotation
+        let angularVelocity = Matter.Body.getAngularVelocity(this.body) * 0.88;
         Matter.Body.setAngularVelocity(this.body, angularVelocity);
+        
+        // Cap max speed for better control
+        const maxSpeed = 25;
+        const currentSpeed = Matter.Body.getSpeed(this.body);
+        if (currentSpeed > maxSpeed) {
+            const velocity = Matter.Body.getVelocity(this.body);
+            const scale = maxSpeed / currentSpeed;
+            Matter.Body.setVelocity(this.body, {
+                x: velocity.x * scale,
+                y: velocity.y * scale
+            });
+        }
     }
 
     exportJSON() {
